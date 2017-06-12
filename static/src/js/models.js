@@ -51,6 +51,62 @@ function ab_pos_models(instance, module) {
 
     module.PosModel = module.PosModel.extend({
 
+        // send an array of orders to the server
+        // available options:
+        // - timeout: timeout for the rpc call in ms
+        // returns a deferred that resolves with the list of
+        // server generated ids for the sent orders
+        _save_to_server: function (orders, options) {
+            if (!orders || !orders.length) {
+                var result = $.Deferred();
+                result.resolve([]);
+                return result;
+            }
+
+            options = options || {};
+
+            var self = this;
+            var timeout = typeof options.timeout === 'number' ? options.timeout : 7500 * orders.length;
+
+            // we try to send the order. shadow prevents a spinner if it takes too long. (unless we are sending an invoice,
+            // then we want to notify the user that we are waiting on something )
+            var posOrderModel = new instance.web.Model('pos.order');
+            console.log('esta llamando el _save_to_server',orders);
+	    if (orders.length > 1) {
+		var new_orders = [orders[0]];
+		} else {
+		var new_orders = orders;
+		}
+            return posOrderModel.call('create_from_ui_v3',
+                [_.map(new_orders, function (order) {
+                    order.to_invoice = options.to_invoice || false;
+                    return order;
+                })],
+                undefined,
+                {
+                    shadow: !options.to_invoice,
+                    timeout: timeout
+                }
+            ).then(function (server_ids) {
+                _.each(new_orders, function (order) {
+                    self.db.remove_order(order.id);
+                });
+                return server_ids;
+            }).fail(function (error, event){
+                if(error.code === 200 ){    // Business Logic Error, not a connection problem
+                    self.pos_widget.screen_selector.show_popup('error-traceback',{
+                        message: error.data.message,
+                        comment: error.data.debug
+                    });
+                }
+                // prevent an error popup creation by the rpc failure
+                // we want the failure to be silent as we send the orders in the background
+                event.preventDefault();
+                console.error('Failed to send orders:', new_orders);
+            });
+        },
+
+
         //creates a new empty order and sets it as the current order
 
         add_new_order: function(){
@@ -107,7 +163,7 @@ function ab_pos_models(instance, module) {
             loaded: function(self,users){ self.users = users; },
         },{
             model:  'res.partner',
-            fields: ['name','street','city','state_id','country_id','vat','phone','zip','mobile','email','ean13','write_date','document_number','responsability_id'],
+            fields: ['name','street','city','state_id','country_id','vat','phone','zip','mobile','email','ean13','write_date','document_number','responsability_id','document_type_id'],
             domain: [['customer','=',true]],
             loaded: function(self,partners){
                 self.partners = partners;
@@ -130,6 +186,12 @@ function ab_pos_models(instance, module) {
             fields: ['name'],
             loaded: function(self,responsabilities){
                 self.responsabilities = responsabilities;
+            },
+        },{
+            model:  'afip.document_type',
+            fields: ['name','code','afip_code'],
+            loaded: function(self,document_types){
+                self.document_types = document_types;
             },
         },{
             model:  'account.tax',

@@ -6,6 +6,15 @@
     <t t-extend="ClientDetails" >
         <t t-jquery=".client-details-right" t-operation="append">
               <div class='client-detail'>
+                   <span class='label'>Tipo Doc </span>
+                   <t t-if='partner.document_type_id'>
+                            <span class='detail document_type_id'><t t-esc='partner.document_type_id[1]'/></span>
+                   </t>
+                   <t t-if='!partner.document_type_id'>
+                            <span class='detail document_type_id empty'>N/A</span>
+                   </t>
+               </div>
+              <div class='client-detail'>
                    <span class='label'>Nro Doc </span>
                    <t t-if='partner.document_number'>
                             <span class='detail document_number'><t t-esc='partner.document_number'/></span>
@@ -28,6 +37,17 @@
 
     <t t-extend="ClientDetailsEdit" >
         <t t-jquery=".client-details-right" t-operation="append">
+               <div class='client-detail'>
+                    <span class='label'>Tipo Doc </span>
+                    <select class='detail client-document-type needsclick' name='document_type_id'>
+                            <option value=''>None</option>
+                            <t t-foreach='widget.pos.document_types' t-as='document_type_id'>
+                                <option t-att-value='document_type_id.id' t-att-selected="partner.document_type_id ? ((document_type_id.id === partner.document_type_id[0]) ? true : undefined) : undefined">
+                                    <t t-esc='document_type_id.name'/>
+                                </option>
+                            </t>
+                    </select>
+               </div>
                <div class='client-detail'>
                     <span class='label'>Nro Doc</span>
                     <input class='detail document_number' name='document_number' t-att-value='partner.document_number || ""'></input>
