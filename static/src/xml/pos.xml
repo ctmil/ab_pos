@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- vim:fdl=1:
+-->
+<templates id="template" xml:space="preserve">
+
+    <t t-extend="ClientDetails" >
+        <t t-jquery=".client-details-right" t-operation="append">
+              <div class='client-detail'>
+                   <span class='label'>Nro Doc </span>
+                   <t t-if='partner.document_number'>
+                            <span class='detail document_number'><t t-esc='partner.document_number'/></span>
+                   </t>
+                   <t t-if='!partner.document_number'>
+                            <span class='detail document_number empty'>N/A</span>
+                   </t>
+               </div>
+              <div class='client-detail'>
+                   <span class='label'>Resp.Fiscal </span>
+                   <t t-if='partner.responsability_id'>
+                            <span class='detail responsability_id'><t t-esc='partner.responsability_id[1]'/></span>
+                   </t>
+                   <t t-if='!partner.responsability_id'>
+                            <span class='detail responsability_id empty'>N/A</span>
+                   </t>
+               </div>
+        </t>
+    </t>
+
+    <t t-extend="ClientDetailsEdit" >
+        <t t-jquery=".client-details-right" t-operation="append">
+               <div class='client-detail'>
+                    <span class='label'>Nro Doc</span>
+                    <input class='detail document_number' name='document_number' t-att-value='partner.document_number || ""'></input>
+               </div>
+               <div class='client-detail'>
+                    <span class='label'>Resp.Fiscal </span>
+                    <select class='detail client-responsability-fiscal needsclick' name='responsability_id'>
+                            <option value=''>None</option>
+                            <t t-foreach='widget.pos.responsabilities' t-as='responsability_id'>
+                                <option t-att-value='responsability_id.id' t-att-selected="partner.responsability_id ? ((responsability_id.id === partner.responsability_id[0]) ? true : undefined) : undefined">
+                                    <t t-esc='responsability_id.name'/>
+                                </option>
+                            </t>
+                    </select>
+               </div>
+	</t>
+    </t>
+
+
+    <t t-extend="Paymentline">
+        <!-- t t-jquery=".paymentline-name" t-operation="append" -->
+        <t t-jquery=".paymentline-name" t-operation="after">
+		<div class=".paymentline-credit-card" t-if="line.get_is_credit_card()" >
+			<!-- t t-esc="line.get_is_credit_card()" / -->
+                        <!-- input class='paymentline-input'
+		                t-att-type="widget.decimal_point === '.' ? 'number' : 'text'"
+                		t-attf-pattern="[0-9]+([\\#{widget.decimal_point || '.' }][0-9]+)?"
+		                step="0.01" t-att-value="line.get_amount_str()" / -->
+
+		        <!-- input class='paymentline-input'
+		                t-att-type="widget.decimal_point === '.' ? 'number' : 'text'"
+                		t-attf-pattern="[0-9]+([\\#{widget.decimal_point || '.' }][0-9]+)?"
+		                step="0.01" t-att-value="line.get_cupon()" / -->
+	                    <div class='paymentline-cupon'>
+				<br />
+        	                <span class='label'>Cupón</span>
+                	        <input class='paymentline-cupon-input'  name='cupon' 
+					type='text' 
+					t-att-id = "'nro_cupon_' + line.name"
+					t-att-value='line.nro_cupon || ""'></input>
+	                    </div>
+	                    <div class='paymentline-tarjeta'>
+				<br />
+        	                <span class='label'>Tarjeta</span>
+                	        <input class='paymentline-card-input'  name='tarjeta'
+					t-att-id = "'nro_tarjeta_' + line.name"
+					type='text' 
+					t-att-value='line.nro_tarjeta || ""'></input>
+        	                <span class='label'>Monto</span>
+	                    </div>
+			    <br />
+		</div>
+		<div class=".paymentline-coefficient" t-if="line.get_coefficient() > 0" >
+			<p>Tiene coeficiente</p>
+		</div>
+	</t>	
+    </t>
+
+</templates> 
