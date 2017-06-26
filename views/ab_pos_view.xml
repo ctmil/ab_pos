@@ -13,6 +13,17 @@
             </field>
         </record>
 
+        <record id="ab_pos_view_product_form" model="ir.ui.view">
+            <field name="name">ab.pos.view.product.form</field>
+            <field name="model">product.product</field>
+	    <field name="inherit_id" ref="product.product_normal_form_view" />
+            <field name="arch" type="xml">
+		<field name="taxes_id" position="after">
+			<field name="tax_rate" />
+		</field>
+            </field>
+        </record>
+
         <record id="ab_pos_view_account_journal_form" model="ir.ui.view">
             <field name="name">ab.pos.view.account.journal.form</field>
             <field name="model">account.journal</field>

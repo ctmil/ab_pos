@@ -151,7 +151,13 @@ function ab_pos_screens(instance, module) {
                 	console.log('setAmount newProduct', newProduct);
 	                // var insert_line = new module.Orderline({}, {pos: this.pos, order: selectedOrder, product: newProduct, quantity: 1, price: recargo_price});
         	        console.log('setAmount value', line.amount, line.cashregister.journal.coeficiente);
-                	var recargo_price = round_di(parseFloat(line.amount) * (line.cashregister.journal.coeficiente));
+			if (newProduct.tax_rate === 0) {
+				console.log('Pasaje #1');
+	                	var recargo_price = round_di(parseFloat(line.amount) * (line.cashregister.journal.coeficiente));
+			} else {
+				console.log('Pasaje #2');
+	                	var recargo_price = (round_di(parseFloat(line.amount / (1+newProduct.tax_rate)) * (line.cashregister.journal.coeficiente)));
+				}
 	                console.log('precio_recargo ', line.amount);
         	        // console.log('Producto Recargo ',newProduct);
                 	var insert_line = new module.Orderline({}, {pos: line.pos, product: newProduct, quantity: 1});
@@ -373,7 +379,14 @@ function ab_pos_screens(instance, module) {
                 console.log('setAmount newProduct', newProduct);
                 // var insert_line = new module.Orderline({}, {pos: this.pos, order: selectedOrder, product: newProduct, quantity: 1, price: recargo_price});
                 console.log('setAmount value', line.amount, line.cashregister.journal.coeficiente);
-                var recargo_price = round_di(parseFloat(line.amount) * (line.cashregister.journal.coeficiente));
+		if (newProduct.tax_rate === 0) {
+			console.log('Pasaje #1');
+                	var recargo_price = round_di(parseFloat(line.amount) * (line.cashregister.journal.coeficiente));
+		} else {
+			console.log('Pasaje #2');
+                	var recargo_price = (round_di(parseFloat(line.amount / (1+newProduct.tax_rate)) * (line.cashregister.journal.coeficiente)));
+			}
+                // var recargo_price = round_di(parseFloat(line.amount) * (line.cashregister.journal.coeficiente));
                 console.log('precio_recargo ', recargo_price);
                 console.log('Producto Recargo ',newProduct);
                 var insert_line = new module.Orderline({}, {pos: this.pos, product: newProduct, quantity: 1});

@@ -12,6 +12,18 @@ import time
 from openerp.fields import Date as newdate
 from datetime import datetime,date
 
+class product_product(models.Model):
+	_inherit = 'product.product'
+
+	@api.one
+	def _compute_tax_rate(self):
+		if self.taxes_id.ids:
+			for tax_id in self.taxes_id.ids:
+				tax = self.env['account.tax'].browse(tax_id)
+				self.tax_rate = tax.amount
+
+	tax_rate = fields.Float('Tasa IVA',compute=_compute_tax_rate)
+
 class account_journal(models.Model):
 	_inherit = 'account.journal'
 
