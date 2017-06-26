@@ -3,6 +3,18 @@
 -->
 <templates id="template" xml:space="preserve">
 
+    <t t-extend="PosWidget" >
+        <t t-jquery=".pos-topheader" t-operation="append">
+		<div id="spin"></div>	
+	</t>	
+        <t t-jquery=".neworder-button" t-operation="replace">
+		<span class="order-button square neworder-button" style="visibility: hidden;"><i class='fa fa-plus' /></span>
+	</t>	
+        <t t-jquery=".deleteorder-button" t-operation="replace">
+		<span class="order-button square deleteorder-button" style="visibility: hidden;"><i class='fa fa-plus' /></span>
+	</t>
+    </t>
+
     <t t-extend="ClientDetails" >
         <t t-jquery=".client-details-right" t-operation="append">
               <div class='client-detail'>
@@ -42,7 +54,8 @@
                     <select class='detail client-document-type needsclick' name='document_type_id'>
                             <option value=''>None</option>
                             <t t-foreach='widget.pos.document_types' t-as='document_type_id'>
-                                <option t-att-value='document_type_id.id' t-att-selected="partner.document_type_id ? ((document_type_id.id === partner.document_type_id[0]) ? true : undefined) : undefined">
+                                <option t-att-value='document_type_id.id' 
+					t-att-selected="partner.document_type_id ? ((document_type_id.id === partner.document_type_id[0]) ? true : undefined) : undefined" >
                                     <t t-esc='document_type_id.name'/>
                                 </option>
                             </t>
@@ -50,37 +63,53 @@
                </div>
                <div class='client-detail'>
                     <span class='label'>Nro Doc</span>
-                    <input class='detail document_number' name='document_number' t-att-value='partner.document_number || ""'></input>
+                    <input class='detail document_number' name='document_number' t-att-value='partner.document_number || ""' required="required"></input>
                </div>
                <div class='client-detail'>
                     <span class='label'>Resp.Fiscal </span>
                     <select class='detail client-responsability-fiscal needsclick' name='responsability_id'>
                             <option value=''>None</option>
                             <t t-foreach='widget.pos.responsabilities' t-as='responsability_id'>
-                                <option t-att-value='responsability_id.id' t-att-selected="partner.responsability_id ? ((responsability_id.id === partner.responsability_id[0]) ? true : undefined) : undefined">
+                                <option t-att-value='responsability_id.id' 
+					t-att-selected="partner.responsability_id ? ((responsability_id.id === partner.responsability_id[0]) ? true : undefined) : undefined"
+					>
                                     <t t-esc='responsability_id.name'/>
                                 </option>
                             </t>
                     </select>
                </div>
 	</t>
+	<t t-jquery=".detail.vat" t-operation="replace">
+	</t>
     </t>
 
 
+    <!-- t t-extend="PaymentScreenWidget">
+	<t t-jquery=".payment-info" t-operation="after">
+		<div class="payment-keys">
+			<h3>Presione F3 para agregar pago</h3>
+		</div>
+	</t>
+    </t -->
+
     <t t-extend="Paymentline">
         <!-- t t-jquery=".paymentline-name" t-operation="append" -->
+        <t t-jquery=".paymentline-input" t-operation="replace" >
+	    <div t-if="!line.get_disabled_amount()">
+	            <input class='paymentline-input'
+        	        t-att-type="widget.decimal_point === '.' ? 'number' : 'text'"
+                	t-attf-pattern="[0-9]+([\\#{widget.decimal_point || '.' }][0-9]+)?"
+	                step="0.01" t-att-value="line.get_amount_str()" />
+	    </div>
+	    <div t-if="line.get_disabled_amount()">
+		<span class="label right-block paymentline-input" t-esc="line.get_amount_str()"></span>
+	    </div>
+	</t>
+        <!-- t t-jquery=".paymentline-input" t-operation="replace" t-if="line.confirmed">
+		<span class="label" t-esc="line.get_amount_str()"></span>
+	</t -->
         <t t-jquery=".paymentline-name" t-operation="after">
 		<div class=".paymentline-credit-card" t-if="line.get_is_credit_card()" >
-			<!-- t t-esc="line.get_is_credit_card()" / -->
-                        <!-- input class='paymentline-input'
-		                t-att-type="widget.decimal_point === '.' ? 'number' : 'text'"
-                		t-attf-pattern="[0-9]+([\\#{widget.decimal_point || '.' }][0-9]+)?"
-		                step="0.01" t-att-value="line.get_amount_str()" / -->
-
-		        <!-- input class='paymentline-input'
-		                t-att-type="widget.decimal_point === '.' ? 'number' : 'text'"
-                		t-attf-pattern="[0-9]+([\\#{widget.decimal_point || '.' }][0-9]+)?"
-		                step="0.01" t-att-value="line.get_cupon()" / -->
 	                    <div class='paymentline-cupon'>
 				<br />
         	                <span class='label'>Cupón</span>
@@ -99,9 +128,25 @@
         	                <span class='label'>Monto</span>
 	                    </div>
 			    <br />
+                    	    <div class="infoline surcharge">
+	                        <span class='left-block'>
+		        	        <span class='label'>Recargo tarjeta crédito (no incluye impuestos)</span>
+				</span>
+                        	<span class="right-block payment-surcharge">
+	        	        	<span class='label' 
+						t-esc="line.recargo"> $</span>
+				</span>
+			    </div>
 		</div>
-		<div class=".paymentline-coefficient" t-if="line.get_coefficient() > 0" >
-			<p>Tiene coeficiente</p>
+		<div class="paymentline-coefficient" 
+                        t-att-id = "'boton_agregar_' + line.name"
+			t-if="line.get_btn_add_recargo()" >
+			<button class="btn-addpayment"
+				t-att-id = "'nro_linea_' + line.name">Agregar recargo</button>
+		</div>
+		<div class="paymentline-delete-button" >
+			<button class="btn-deletepayment"
+				t-att-id = "'nro_linea_' + line.name">Borrar pago</button>
 		</div>
 	</t>	
     </t>

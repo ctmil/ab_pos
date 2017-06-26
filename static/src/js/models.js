@@ -7,12 +7,58 @@ function ab_pos_models(instance, module) {
     var PaymentlineParent = module.Paymentline;
     var PosModelParent = module.PosModel;
 
+    module.Order = module.Order.extend({
+        removePaymentline: function(line){
+            if(this.selected_paymentline === line){
+                this.selectPaymentline(undefined);
+            }
+	    if (line.product_recargo) {
+		// console.log('Con producto de recargo ',line.product_recargo,this,this.attributes.orderLines.models);
+		var orderLines = this.attributes.orderLines.models;
+		for (var x=0; x < orderLines.length; x++) {
+			if (orderLines[x].cid == line.product_recargo) {
+				console.log('Orderlines encontro producto recargo ',orderLines[x]);
+				this.removeOrderline(orderLines[x]);
+				}
+			}
+		}
+            this.get('paymentLines').remove(line);
+        },
+
+    });
+	
+
     module.Paymentline = module.Paymentline.extend({
         initialize: function (attr, options) {
         	PaymentlineParent.prototype.initialize.apply(this, arguments);
 		this.nro_cupon = '';
 		this.nro_tarjeta = '';
+		this.product_recargo = null;
+		this.recargo;
+		this.confirmed = false;
 		},
+        // returns the amount of money on this paymentline
+        //get_amount: function(){
+//	    if (this.confirmed) {
+//		    console.log('get_amount',this.amount);
+//	            return this.amount;
+//		} else {
+//		    console.log('get_amount not confirmed',this);
+//		    return 0;
+//		};
+  //      },
+    //    get_amount_str: function(){
+//	    if (this.confirmed) {
+//	            return openerp.instances[this.pos.session.name].web.format_value(this.amount, {
+  //      	        type: 'float', digits: [69, this.pos.currency.decimals]
+//	            });
+//	    } else {
+//	            return openerp.instances[this.pos.session.name].web.format_value(0, {
+  //      	        type: 'float', digits: [69, this.pos.currency.decimals]
+//	            });
+//	    };
+  //      },
+
         // returns the payment type: 'cash' | 'bank'
         get_is_credit_card: function(){
             return this.cashregister.journal.is_credit_card
@@ -21,30 +67,64 @@ function ab_pos_models(instance, module) {
 	get_coefficient: function(){
             return this.cashregister.journal.coeficiente
 	},
-        //sets the amount of money on this payment line
-        set_amount: function(value){
-            console.log('set_amount ',this);
+	// returns payment type coefficient
+	get_btn_add_recargo: function(){
+            return this.cashregister.journal.coeficiente > 0 && this.product_recargo === null;
+	},
+	get_disabled_amount: function() {
+	    if (this.cashregister.journal.coeficiente > 0 && this.product_recargo != null) {
+		return true;	
+		}
+	    if (this.cashregister.journal.coeficiente > 0 && this.product_recargo == null) {
+		return false;	
+		}
 	    if (this.cashregister.journal.coeficiente == 0) {
-	            this.amount = round_di(parseFloat(value) || 0, this.pos.currency.decimals);
-		} else {
-	            this.amount = round_di(parseFloat(value) * ( 1 + this.cashregister.journal.coeficiente) || 0, this.pos.currency.decimals);
-		    var selectedOrder = this.pos.get('selectedOrder');
-		//	console.log('set_amount ', this.pos);
-		    var newLine = selectedOrder.getLastOrderline();
-		    var newProduct = newLine.product;
-		    var recargo_price = round_di(parseFloat(value) * (this.cashregister.journal.coeficiente));
-		    newProduct = this.pos.db.product_by_id[this.cashregister.journal.producto_recargo[0]];
-		    var insert_line = new module.Orderline({}, {pos: this.pos, order: selectedOrder, product: newProduct, quantity: 1, price: recargo_price});
-		    var recargo_price = round_di(parseFloat(value) * (this.cashregister.journal.coeficiente));
-		    //console.log('precio_recargo ', recargo_price);
-		    //console.log('Producto Recargo ',newProduct);
-		    var insert_line = new module.Orderline({}, {pos: this.pos, product: newProduct, quantity: 1});
-		    insert_line.price = recargo_price;
-		    //console.log('insert_line ', insert_line);
-		    this.pos.get('selectedOrder').addOrderline(insert_line);
-		};
-            this.trigger('change:amount',this);
+		return false;	
+		}
+	},
+
+
+        // returns the associated cashregister
+        //exports as JSON for server communication
+        export_as_JSON: function(){
+            return {
+                name: instance.web.datetime_to_str(new Date()),
+                statement_id: this.cashregister.id,
+                account_id: this.cashregister.account_id[0],
+                journal_id: this.cashregister.journal_id[0],
+		nro_cupon: this.nro_cupon,
+		nro_tarjeta: this.nro_tarjeta,
+                amount: this.get_amount()
+            };
         },
+
+
+        //sets the amount of money on this payment line
+//        set_amount: function(value){
+  //          console.log('set_amount ',this);
+	    //if (this.cashregister.journal.coeficiente == 0) {
+	    //        this.amount = round_di(parseFloat(value) || 0, this.pos.currency.decimals);
+//		} else {
+	//            this.amount = round_di(parseFloat(value) * ( 1 + this.cashregister.journal.coeficiente) || 0, this.pos.currency.decimals);
+	//	    var selectedOrder = this.pos.get('selectedOrder');
+	//	    var newLine = selectedOrder.getLastOrderline();
+	//	    console.log('setAmount antes del getLastOrderline', newLine);
+	//	    if (newLine == undefined) {
+	//		return;
+	//		};
+	//	    var newProduct = newLine.product;
+	//	    newProduct = this.pos.db.product_by_id[this.cashregister.journal.producto_recargo[0]];
+	//	    console.log('setAmount newProduct', newProduct);
+	//	    console.log('setAmount value', value, this.cashregister.journal.coeficiente);
+	//	    var recargo_price = round_di(parseFloat(value) * (this.cashregister.journal.coeficiente));
+	//	    console.log('precio_recargo ', recargo_price);
+	//	    console.log('Producto Recargo ',newProduct);
+	//	    var insert_line = new module.Orderline({}, {pos: this.pos, product: newProduct, quantity: 1});
+	//	    insert_line.price = recargo_price;
+	//	    this.pos.get('selectedOrder').addOrderline(insert_line);
+	//	};
+    //        this.trigger('change:amount',this);
+      //  },
 
 	
     });
@@ -57,31 +137,33 @@ function ab_pos_models(instance, module) {
         // returns a deferred that resolves with the list of
         // server generated ids for the sent orders
         _save_to_server: function (orders, options) {
+            console.log('esta llamando el _save_to_server antes del create_from_ui_v3',orders);
             if (!orders || !orders.length) {
                 var result = $.Deferred();
                 result.resolve([]);
                 return result;
-            }
+        	}
 
             options = options || {};
 
             var self = this;
-            var timeout = typeof options.timeout === 'number' ? options.timeout : 7500 * orders.length;
+            // var timeout = typeof options.timeout === 'number' ? options.timeout : 7500 * orders.length;
+            var timeout = typeof options.timeout === 'number' ? options.timeout : 30000;
 
-            // we try to send the order. shadow prevents a spinner if it takes too long. (unless we are sending an invoice,
-            // then we want to notify the user that we are waiting on something )
             var posOrderModel = new instance.web.Model('pos.order');
-            console.log('esta llamando el _save_to_server',orders);
 	    if (orders.length > 1) {
 		var new_orders = [orders[0]];
 		} else {
 		var new_orders = orders;
 		}
-            return posOrderModel.call('create_from_ui_v3',
-                [_.map(new_orders, function (order) {
-                    order.to_invoice = options.to_invoice || false;
+            console.log('esta llamando el _save_to_server. Llama al create_from_ui_v3 ',orders,timeout);
+            // self.pos_widget.loading_message('Imprimiendo ticket'), 100);
+
+            return_value = posOrderModel.call('create_from_ui_v3',
+               [_.map(new_orders, function (order) {
+                 order.to_invoice = options.to_invoice || false;
                     return order;
-                })],
+               })],
                 undefined,
                 {
                     shadow: !options.to_invoice,
@@ -89,8 +171,13 @@ function ab_pos_models(instance, module) {
                 }
             ).then(function (server_ids) {
                 _.each(new_orders, function (order) {
+		    console.log('Inside  then ',server_ids);
                     self.db.remove_order(order.id);
                 });
+		//self.pos_widget.screen_selector.show_popup('Odoo Info',{
+                //        message: 'Pedido guardado en Odoo e impreso'
+		//	});
+		window.location.reload();
                 return server_ids;
             }).fail(function (error, event){
                 if(error.code === 200 ){    // Business Logic Error, not a connection problem
@@ -104,13 +191,13 @@ function ab_pos_models(instance, module) {
                 event.preventDefault();
                 console.error('Failed to send orders:', new_orders);
             });
+	    return;
         },
 
 
         //creates a new empty order and sets it as the current order
 
         add_new_order: function(){
-	    console.log('models ',this.models);
             var order = new module.Order({pos:this});
 	    // console.log(this.partners);
 	    for (var x = 0; x < this.partners.length; x++) {
@@ -121,6 +208,7 @@ function ab_pos_models(instance, module) {
             this.get('orders').add(order);
             this.set('selectedOrder', order);
         },
+
         models: [
         {
             model:  'res.users',
@@ -315,7 +403,7 @@ function ab_pos_models(instance, module) {
             },
         },{
             model:  'account.journal',
-            fields: ['coeficiente','producto_recargo'],
+            fields: ['name','coeficiente','producto_recargo','is_credit_card'],
             domain: function(self,tmp){ return [['id','in',tmp.journals]]; },
             loaded: function(self, journals){
                 self.journals = journals;

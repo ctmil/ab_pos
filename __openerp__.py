@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-# © 2014-2015 Taktik (http://www.taktik.be) - Adil Houmadi <ah@taktik.be>
-# © 2016 Serv. Tecnol. Avanzados - Pedro M. Baeza
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 {
@@ -10,7 +8,7 @@
     'sequence': 1,
     'summary': 'AB Point of sale',
     'depends': [
-        "account","point_of_sale",
+        "account","point_of_sale","l10n_ar_fpoc_pos"
     ],
     'data': [
         "views/ab_pos_template.xml",

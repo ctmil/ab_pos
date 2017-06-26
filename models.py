@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from openerp import models, fields, api, _
+from openerp import tools, models, fields, api, _
 from openerp.osv import osv
 from openerp.exceptions import except_orm, ValidationError
 from StringIO import StringIO
@@ -8,6 +8,7 @@ import urllib2, httplib, urlparse, gzip, requests, json
 import openerp.addons.decimal_precision as dp
 import logging
 import datetime
+import time
 from openerp.fields import Date as newdate
 from datetime import datetime,date
 
@@ -41,3 +42,20 @@ class res_partner(models.Model):
 		return True
 
 	is_consumidor_final = fields.Boolean('Consumidor Final',default=False)
+	responsability_id = fields.Many2one(
+        	'afip.responsability',
+	        'Responsability',
+		required=True
+	    )
+	document_type_id = fields.Many2one(
+        	'afip.document_type',
+	        'Document type',
+		required=True
+	    )
+	document_number = fields.Char(
+        	'Document number',
+	        size=64,
+		required=True
+	    )
+
+
