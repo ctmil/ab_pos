@@ -12,7 +12,7 @@ function ab_pos_models(instance, module) {
             if(this.selected_paymentline === line){
                 this.selectPaymentline(undefined);
             }
-	    if (line.product_recargo) {
+	    if (line.product_recargo && line.cashregister.journal.coeficiente > 0) {
 		// console.log('Con producto de recargo ',line.product_recargo,this,this.attributes.orderLines.models);
 		var orderLines = this.attributes.orderLines.models;
 		for (var x=0; x < orderLines.length; x++) {
@@ -69,13 +69,13 @@ function ab_pos_models(instance, module) {
 	},
 	// returns payment type coefficient
 	get_btn_add_recargo: function(){
-            return this.cashregister.journal.coeficiente > 0 && this.product_recargo === null;
+            return this.cashregister.journal.coeficiente != 0 && this.product_recargo === null;
 	},
 	get_disabled_amount: function() {
-	    if (this.cashregister.journal.coeficiente > 0 && this.product_recargo != null) {
+	    if (this.cashregister.journal.coeficiente != 0 && this.product_recargo != null) {
 		return true;	
 		}
-	    if (this.cashregister.journal.coeficiente > 0 && this.product_recargo == null) {
+	    if (this.cashregister.journal.coeficiente != 0 && this.product_recargo == null) {
 		return false;	
 		}
 	    if (this.cashregister.journal.coeficiente == 0) {

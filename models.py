@@ -27,9 +27,23 @@ class product_product(models.Model):
 class account_journal(models.Model):
 	_inherit = 'account.journal'
 
+	@api.model
+	def connect_fiscal_printer(self):
+		journals = self.env['account.journal'].search([])
+		for journal in journals:
+			if journal.use_fiscal_printer and journal.nro_serie != '':
+				fps = self.env['fpoc.fiscal_printer'].search([])
+				for fp in fps:
+					if fp.serialNumber == journal.nro_serie:
+						vals = {
+							'fiscal_printer_id': fp.id
+							}
+						journal.write(vals)
+
 	is_credit_card = fields.Boolean('Tarjeta de crédito',default=False)
 	coeficiente = fields.Float('Coeficiente',default=0)
 	producto_recargo = fields.Many2one('product.product','Producto Recargo',domain=[('type','=','service')])
+	nro_serie = fields.Char('Nro de Serie Impresora Fiscal')
 
 class account_bank_statement_line(models.Model):
 	_inherit = 'account.bank.statement.line'

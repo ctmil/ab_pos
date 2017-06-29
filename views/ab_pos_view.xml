@@ -30,6 +30,7 @@
 	    <field name="inherit_id" ref="account.view_account_journal_form" />
             <field name="arch" type="xml">
 		<field name="group_invoice_lines" position="after">
+			<field name="nro_serie" />
 			<field name="is_credit_card" />
 			<field name="coeficiente" attrs="{'invisible':[('is_credit_card', '=', False)]}"/>
 			<field name="producto_recargo" attrs="{'invisible':[('is_credit_card', '=', False)]}"/>

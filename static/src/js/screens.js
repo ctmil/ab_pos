@@ -131,7 +131,7 @@ function ab_pos_screens(instance, module) {
 		node.line.confirmed = true;
 		var line = node.line;
 		console.log('on_click_addpayment',line);
-	    	if (line.cashregister.journal.coeficiente > 0) {
+	    	if (line.cashregister.journal.coeficiente != 0) {
 			if (line.product_recargo != null) {
 		                //this.pos_widget.screen_selector.show_popup('error',{
         		        //    'message': _t('Recargo'),
@@ -164,6 +164,14 @@ function ab_pos_screens(instance, module) {
 	                insert_line.price = line.recargo;
         	        line.pos.get('selectedOrder').addOrderline(insert_line);
 			line.product_recargo = insert_line.cid;
+			// deletes discount line
+			if (line.cashregister.journal.coeficiente < 0) {
+				console.log('addPaymentLine selectedOrder',selectedOrder,line);
+				old_node_line = node.line;
+                		event.stopPropagation();
+                    		selectedOrder.removePaymentline(node.line)
+				// this.remove_paymentline(node.line);
+				};
 			//line.recargo = recargo_price;
 			// line.amount = line.amount + recargo_price * 1.21;
                 	// console.log('insert_line ',line,event);
@@ -255,7 +263,8 @@ function ab_pos_screens(instance, module) {
                     });
                     return;
                 }
-                if (plines[i].cashregister.journal.coeficiente > 0 && plines[i].product_recargo === null) {
+                // if (plines[i].cashregister.journal.coeficiente != 0 && plines[i].product_recargo === null) {
+                if (plines[i].product_recargo === null && plines[i].cashregister.journal.coeficiente > 0) {
 		    //console.log('validate_order plines',plines[i]);
 		    //console.log('validate_order plines',plines[i].producto_recargo);
 		    //console.log('validate_order plines',plines[i].cashregister.journal.coeficiente);
@@ -366,7 +375,7 @@ function ab_pos_screens(instance, module) {
         add_paymentline: function(line) {
             var list_container = this.el.querySelector('.payment-lines');
                 list_container.appendChild(this.render_paymentline(line));
-	    if (line.cashregister.journal.coeficiente > 0) {
+	    if (line.cashregister.journal.coeficiente != 0) {
 		console.log('add_paymentline ',line);
 		var selectedOrder = this.pos.get('selectedOrder');
                 var newLine = selectedOrder.getLastOrderline();
