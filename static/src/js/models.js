@@ -61,8 +61,12 @@ function ab_pos_models(instance, module) {
 
         // returns the payment type: 'cash' | 'bank'
         get_is_credit_card: function(){
-            return this.cashregister.journal.is_credit_card
-        },
+	    if (this.cashregister.journal.is_credit_card && this.cashregister.journal.coeficiente < 0) {
+		return false;
+		} else {
+	            return this.cashregister.journal.is_credit_card;
+		};
+	},
 	// returns payment type coefficient
 	get_coefficient: function(){
             return this.cashregister.journal.coeficiente
