@@ -380,31 +380,47 @@ function ab_pos_screens(instance, module) {
 		var selectedOrder = this.pos.get('selectedOrder');
                 var newLine = selectedOrder.getLastOrderline();
 		console.log('Tiene coeficiente - selectedOrder', selectedOrder);
+		if (line.cashregister.journal.coeficiente < 0) {
+			console.log('Aplicara el descuento a las lineas',selectedOrder.get('orderLines').models);
+	                var orderLines = selectedOrder.get('orderLines').models;
+			var discount = line.cashregister.journal.coeficiente * 100;
+			if (orderLines) {
+				console.log('recorrera las lineas',orderLines,discount);
+				for (var x = 0; x <  selectedOrder.get('orderLines').models.length; x++) {
+					console.log('selectedLine',x);
+					selectedOrder.get('orderLines').models[x].discount = discount * (-1);
+					};
+				};
+                		// event.stopPropagation();
+                    		// selectedOrder.removePaymentline(line);
+			};
                 if (newLine == undefined) {
                         return;
                         };
-                var newProduct = newLine.product;
-                newProduct = this.pos.db.product_by_id[line.cashregister.journal.producto_recargo[0]];
-                console.log('setAmount newProduct', newProduct);
-                // var insert_line = new module.Orderline({}, {pos: this.pos, order: selectedOrder, product: newProduct, quantity: 1, price: recargo_price});
-                console.log('setAmount value', line.amount, line.cashregister.journal.coeficiente);
-		if (newProduct.tax_rate === 0) {
-			console.log('Pasaje #1');
-                	var recargo_price = round_di(parseFloat(line.amount) * (line.cashregister.journal.coeficiente));
-		} else {
-			console.log('Pasaje #2');
-                	var recargo_price = (round_di(parseFloat(line.amount / (1+newProduct.tax_rate)) * (line.cashregister.journal.coeficiente)));
-			}
-                // var recargo_price = round_di(parseFloat(line.amount) * (line.cashregister.journal.coeficiente));
-                console.log('precio_recargo ', recargo_price);
-                console.log('Producto Recargo ',newProduct);
-                var insert_line = new module.Orderline({}, {pos: this.pos, product: newProduct, quantity: 1});
-                insert_line.price = recargo_price;
-                //this.pos.get('selectedOrder').addOrderline(insert_line);
-		//line.product_recargo = insert_line.cid;
-		line.recargo = recargo_price;
-		line.amount = line.amount + recargo_price * 1.21;
-                console.log('insert_line ',line,this.pos.get('selectedOrder'));
+		if (line.cashregister.journal.coeficiente > 0) {
+	                var newProduct = newLine.product;
+        	        newProduct = this.pos.db.product_by_id[line.cashregister.journal.producto_recargo[0]];
+                	console.log('setAmount newProduct', newProduct);
+	                // var insert_line = new module.Orderline({}, {pos: this.pos, order: selectedOrder, product: newProduct, quantity: 1, price: recargo_price});
+        	        console.log('setAmount value', line.amount, line.cashregister.journal.coeficiente);
+			if (newProduct.tax_rate === 0) {
+				console.log('Pasaje #1');
+	                	var recargo_price = round_di(parseFloat(line.amount) * (line.cashregister.journal.coeficiente));
+			} else {
+				console.log('Pasaje #2');
+                		var recargo_price = (round_di(parseFloat(line.amount / (1+newProduct.tax_rate)) * (line.cashregister.journal.coeficiente)));
+				}
+        	        // var recargo_price = round_di(parseFloat(line.amount) * (line.cashregister.journal.coeficiente));
+                	console.log('precio_recargo ', recargo_price);
+        	        console.log('Producto Recargo ',newProduct);
+	                var insert_line = new module.Orderline({}, {pos: this.pos, product: newProduct, quantity: 1});
+                	insert_line.price = recargo_price;
+	                //this.pos.get('selectedOrder').addOrderline(insert_line);
+			//line.product_recargo = insert_line.cid;
+			line.recargo = recargo_price;
+			line.amount = line.amount + recargo_price * 1.21;
+                	console.log('insert_line ',line,this.pos.get('selectedOrder'));
+			};
 		};
             if(this.numpad_state){
                 this.numpad_state.reset();
