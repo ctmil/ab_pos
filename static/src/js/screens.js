@@ -383,12 +383,13 @@ function ab_pos_screens(instance, module) {
 		if (line.cashregister.journal.coeficiente < 0) {
 			console.log('Aplicara el descuento a las lineas',selectedOrder.get('orderLines').models);
 	                var orderLines = selectedOrder.get('orderLines').models;
-			var discount = line.cashregister.journal.coeficiente * 100;
+			var discount = line.cashregister.journal.coeficiente;
 			if (orderLines) {
 				console.log('recorrera las lineas',orderLines,discount);
 				for (var x = 0; x <  selectedOrder.get('orderLines').models.length; x++) {
-					console.log('selectedLine',x);
-					selectedOrder.get('orderLines').models[x].discount = discount * (-1);
+					console.log('selectedLine',selectedOrder.get('orderLines').models[x]);
+					// selectedOrder.get('orderLines').models[x].discount = discount * (-1);
+					selectedOrder.get('orderLines').models[x].price = selectedOrder.get('orderLines').models[x].price * ( 1 + discount) ;
 					};
 				};
                 		// event.stopPropagation();
