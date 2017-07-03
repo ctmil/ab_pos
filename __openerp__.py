@@ -13,6 +13,7 @@
     'data': [
         "views/ab_pos_template.xml",
         "views/ab_pos_view.xml",
+	"security/ir.model.access.csv"
     ],
     'demo': [
     ],

@@ -3,6 +3,72 @@
 -->
 <templates id="template" xml:space="preserve">
 
+    <!-- t t-extend="Product" >
+        <t t-jquery=".price-tag" t-operation="replace">
+		<span class="price-tag">
+	               <t t-esc="widget.format_currency(product.price * (1 + product.tax_rate),'Product Price')"></t>
+		</span>
+	</t>
+    </t -->
+
+    <t t-name="NumpadWidget">
+        <div class="numpad">
+            <button class="input-button number-char">1</button>
+            <button class="input-button number-char">2</button>
+            <button class="input-button number-char">3</button>
+            <button class="mode-button" data-mode='quantity'>Qty</button>
+            <br />
+            <button class="input-button number-char">4</button>
+            <button class="input-button number-char">5</button>
+            <button class="input-button number-char">6</button>
+            <button class="" ></button>
+            <br />
+            <button class="input-button number-char">7</button>
+            <button class="input-button number-char">8</button>
+            <button class="input-button number-char">9</button>
+            <button class="mode-button" data-mode='price'>Price</button>
+            <br />
+            <button class="input-button numpad-minus" >+/-</button>
+            <button class="input-button number-char">0</button>
+            <button class="input-button number-char">.</button>
+            <button class="input-button numpad-backspace">
+                <img src="/point_of_sale/static/src/img/backspace.png" width="24" height="21" />
+            </button>
+            <br />
+        </div>
+    </t>
+
+
+
+    <t t-extend="Product" >
+            <!-- div class="product-name">
+                <t t-esc="product.display_name"/>
+            </div -->
+        <t t-jquery=".price-tag" t-operation="after">
+		<span class="price-tag">
+                        <t t-esc="widget.format_currency(product.lst_price_with_vat,'Product Price')"/>
+		</span>
+	</t>
+        <t t-jquery=".product-name" t-operation="after">
+                <span class='label'>
+			Precio c/IVA
+	                <t t-esc="product.lst_price_with_vat"></t>
+		</span>
+	</t>
+    </t>
+
+
+    <!-- t t-extend="Orderline" >
+        <t t-jquery=".product-name" t-operation="after">
+		   <br />
+                   <span class='label'>Precio c/IVA </span>
+                   <t t-if='line.get_price_with_vat()'>
+                            <span class='detail price'><t t-esc='line.get_price_with_vat()'/></span>
+                   </t>
+		   <br />
+	</t>
+    </t -->
+
     <t t-extend="PosWidget" >
         <t t-jquery=".pos-topheader" t-operation="append">
 		<div id="spin"></div>	

@@ -20,6 +20,18 @@
             <field name="arch" type="xml">
 		<field name="taxes_id" position="after">
 			<field name="tax_rate" />
+			<field name="lst_price_with_vat" />
+		</field>
+            </field>
+        </record>
+
+        <record id="ab_pos_view_account_invoice_form" model="ir.ui.view">
+            <field name="name">ab.pos.view.account.invoice.form</field>
+            <field name="model">account.invoice</field>
+	    <field name="inherit_id" ref="account.invoice_form" />
+            <field name="arch" type="xml">
+		<field name="move_id" position="after">
+			<field name="session_id" />
 		</field>
             </field>
         </record>
@@ -32,8 +44,8 @@
 		<field name="group_invoice_lines" position="after">
 			<field name="nro_serie" />
 			<field name="is_credit_card" />
-			<field name="coeficiente" attrs="{'invisible':[('is_credit_card', '=', False)]}"/>
-			<field name="producto_recargo" attrs="{'invisible':[('is_credit_card', '=', False)]}"/>
+			<field name="coeficiente" />
+			<field name="producto_recargo" />
 		</field>
             </field>
         </record>
@@ -46,6 +58,33 @@
 		<field name="statement_id" position="after">
 			<field name="nro_cupon" />
 			<field name="nro_tarjeta" />
+		</field>
+            </field>
+        </record>
+
+        <record id="ab_pos_view_pos_session_form" model="ir.ui.view">
+            <field name="name">ab.pos.view.pos.session.form</field>
+            <field name="model">pos.session</field>
+	    <field name="inherit_id" ref="point_of_sale.view_pos_session_form" />
+            <field name="arch" type="xml">
+                <button name="close" position="after">
+                        <button name="update_session_refunds" type="object" string="Actualizar NCs"></button>
+		</button>
+		<field name="config_id" position="after">
+			<group>
+				<field name="session_sales" />
+			</group>
+		</field>
+		<field name="statement_ids" position="after">	
+			<group string="Notas de Credito">
+				<field name="refund_ids" readonly="1" >
+					<tree string="Ns">
+						<field name="session_id" />
+						<field name="refund_id" />
+						<field name="amount_total" />
+					</tree>
+				</field>
+			</group>
 		</field>
             </field>
         </record>

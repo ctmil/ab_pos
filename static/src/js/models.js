@@ -5,6 +5,7 @@ function ab_pos_models(instance, module) {
     var round_di = instance.web.round_decimals;
 
     var PaymentlineParent = module.Paymentline;
+    var PaymentlineParent = module.Paymentline;
     var PosModelParent = module.PosModel;
 
     module.Order = module.Order.extend({
@@ -27,6 +28,14 @@ function ab_pos_models(instance, module) {
 
     });
 	
+
+    module.Orderline = module.Orderline.extend({
+        // return the product of this orderline
+        get_price_with_vat: function(){
+            return this.product.lst_price_with_vat;
+        },
+//
+   });
 
     module.Paymentline = module.Paymentline.extend({
         initialize: function (attr, options) {
@@ -198,6 +207,32 @@ function ab_pos_models(instance, module) {
 	    return;
         },
 
+        // saves the order locally and try to send it to the backend. 
+        // it returns a deferred that succeeds after having tried to send the order and all the other pending orders.
+        push_order: function(order) {
+            var self = this;
+            if (order) {
+                    console.log('push_order',order.export_as_JSON());
+                }
+
+            if(order){
+                this.proxy.log('push_order',order.export_as_JSON());
+                this.db.add_order(order.export_as_JSON());
+            }
+
+            var pushed = new $.Deferred();
+
+            this.flush_mutex.exec(function(){
+                var flushed = self._flush_orders(self.db.get_orders());
+
+                flushed.always(function(ids){
+                    pushed.resolve();
+                });
+            });
+            return pushed;
+        },
+
+
 
         //creates a new empty order and sets it as the current order
 
@@ -309,7 +344,8 @@ function ab_pos_models(instance, module) {
             loaded: function(self,pos_sessions){
                 self.pos_session = pos_sessions[0]; 
 
-                var orders = self.db.get_orders();
+                // var orders = self.db.get_orders();
+                var orders = {};
                 for (var i = 0; i < orders.length; i++) {
                     self.pos_session.sequence_number = Math.max(self.pos_session.sequence_number, orders[i].data.sequence_number+1);
                 }
@@ -380,7 +416,7 @@ function ab_pos_models(instance, module) {
             model:  'product.product',
             fields: ['display_name', 'list_price','price','pos_categ_id', 'taxes_id', 'ean13', 'default_code', 
                      'to_weight', 'uom_id', 'uos_id', 'uos_coeff', 'mes_type', 'description_sale', 'description',
-                     'product_tmpl_id','tax_rate'],
+                     'product_tmpl_id','tax_rate','lst_price_with_vat'],
             domain: [['sale_ok','=',true],['available_in_pos','=',true]],
             context: function(self){ return { pricelist: self.pricelist.id, display_default_code: false }; },
             loaded: function(self, products){
