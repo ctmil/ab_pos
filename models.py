@@ -155,6 +155,15 @@ class account_bank_statement_line(models.Model):
 class res_partner(models.Model):
 	_inherit = 'res.partner'
 
+
+	@api.constrains('street','zip','country_id','state_id')
+	def _check_customer_data(self):
+		if self.customer:
+			if not street or not zip or not country_id or not state_id:
+				raise ValidationError('Debe ingresar todos los datos del cliente')
+		return True
+			
+
 	@api.constrains('is_consumidor_final')
 	def check_consumidor_final(self):
 		cfs = self.search([('is_consumidor_final','=',True)])
