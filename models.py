@@ -156,7 +156,7 @@ class res_partner(models.Model):
 	_inherit = 'res.partner'
 
 
-	@api.constrains('street','zip','country_id','state_id')
+	@api.constrains('street','zip','country_id')
 	def _check_customer_data(self):
 		if self.customer:
 			if not street or not zip or not country_id or not state_id:
