@@ -271,29 +271,15 @@ function ab_pos_screens(instance, module) {
 	    console.log('validate_order',currentOrder);
 	    var partner = currentOrder.get_client();
 	    console.log('validate_order partner',partner);
-	
-	    if (partner.street == "false" ) {
-	                this.pos_widget.screen_selector.show_popup('error',{
-        	            'message': _t('Datos faltantes'),
-              	    'comment': _t('Debe cargarse la direccion del cliente'),
-	                });
-        	        return;
-		};
-	    if (partner.city == "false") {
-	                this.pos_widget.screen_selector.show_popup('error',{
-        	            'message': _t('Datos faltantes'),
-              	    'comment': _t('Debe cargarse la ciudad del cliente'),
-	                });
-        	        return;
-		};
-	    if (partner.zip == "false") {
-	                this.pos_widget.screen_selector.show_popup('error',{
-        	            'message': _t('Datos faltantes'),
-              	    'comment': _t('Debe cargarse el codigo postal del cliente'),
-	                });
-        	        return;
-		};
 
+	    if (currentOrder.getTotalTaxIncluded() < 0.01) {
+	                this.pos_widget.screen_selector.show_popup('error',{
+        	            'message': _t('Monto Incorrecto'),
+              	    'comment': _t('No se pueden crear tickets de monto 0'),
+	                });
+        	        return;
+		}
+	
 	    if (currentOrder.getTotalTaxIncluded() > 1000 && partner.document_number == '11111111113') {
 	                this.pos_widget.screen_selector.show_popup('error',{
         	            'message': _t('Cliente incorrecto'),

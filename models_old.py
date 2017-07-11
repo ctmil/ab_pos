@@ -24,6 +24,8 @@ class pos_order(osv.osv):
 		order = self.pool.get('pos.order').browse(cr,uid,origin_id)
 		if order.refund_id:
 			raise osv.except_osv(_('Error!'),'El pedido ya  cuenta con una devolución')
+		if order.amount_total < 0:
+			raise osv.except_osv(_('Error!'),'No se hacen devoluciones de una devolución')
 		if order.partner_id.document_number == 11111111113:
 			raise osv.except_osv(_('Error!'),'No se hacen devoluciones de consumidores finales')
 		res = super(pos_order, self).refund(cr,uid,ids,context=context)
