@@ -159,7 +159,7 @@ class res_partner(models.Model):
 	@api.constrains('street','zip','country_id')
 	def _check_customer_data(self):
 		if self.customer:
-			if not street or not zip or not country_id or not state_id:
+			if not self.street or not self.zip or not self.country_id:
 				raise ValidationError('Debe ingresar todos los datos del cliente')
 		return True
 			
