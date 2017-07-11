@@ -6,6 +6,37 @@ function ab_pos_screens(instance, module) {
 
     module.PaymentScreenWidget = instance.point_of_sale.PaymentScreenWidget.extend({
 
+        show: function(){
+            this._super();
+            var self = this;
+
+            this.add_action_button({
+                    label: _t('Nueva Orden'),
+                    icon: '/point_of_sale/static/src/img/icons/png48/shut-down.png',
+                    click: function(){
+                        self.clear_order();
+                    },
+                });
+
+            this.update_payment_summary();
+
+        },
+
+	clear_order: function() {
+	    console.log('clear_order ',this.pos.get('selectedOrder'));
+            if( !this.pos.get('selectedOrder').is_empty() ){
+                        this.pos_widget.screen_selector.show_popup('confirm',{
+                            message: _t('Reiniciar orden ?'),
+                            comment: _t('Perderá todos los datos ingresados'),
+                            confirm: function(){
+                               this.pos.delete_current_order();
+                            },
+                        });
+            }else{
+                        this.pos.delete_current_order();
+            };
+	},
+
         render_paymentline: function(line){
             var el_html  = openerp.qweb.render('Paymentline',{widget: this, line: line});
                 el_html  = _.str.trim(el_html);
@@ -53,6 +84,7 @@ function ab_pos_screens(instance, module) {
             var self = this;
             this._super(parent,options);
 
+	    console.log('PaymentScreenWidget init',this);
             this.pos.bind('change:selectedOrder',function(){
                     this.bind_events();
                     this.renderElement();
@@ -238,6 +270,30 @@ function ab_pos_screens(instance, module) {
             var currentOrder = this.pos.get('selectedOrder');
 	    console.log('validate_order',currentOrder);
 	    var partner = currentOrder.get_client();
+	    console.log('validate_order partner',partner);
+	
+	    if (partner.street == "false" ) {
+	                this.pos_widget.screen_selector.show_popup('error',{
+        	            'message': _t('Datos faltantes'),
+              	    'comment': _t('Debe cargarse la direccion del cliente'),
+	                });
+        	        return;
+		};
+	    if (partner.city == "false") {
+	                this.pos_widget.screen_selector.show_popup('error',{
+        	            'message': _t('Datos faltantes'),
+              	    'comment': _t('Debe cargarse la ciudad del cliente'),
+	                });
+        	        return;
+		};
+	    if (partner.zip == "false") {
+	                this.pos_widget.screen_selector.show_popup('error',{
+        	            'message': _t('Datos faltantes'),
+              	    'comment': _t('Debe cargarse el codigo postal del cliente'),
+	                });
+        	        return;
+		};
+
 	    if (currentOrder.getTotalTaxIncluded() > 1000 && partner.document_number == '11111111113') {
 	                this.pos_widget.screen_selector.show_popup('error',{
         	            'message': _t('Cliente incorrecto'),
@@ -353,6 +409,7 @@ function ab_pos_screens(instance, module) {
 
         update_payment_summary: function() {
             var currentOrder = this.pos.get('selectedOrder');
+	    console.log('update_payment_summary',currentOrder);
             var paidTotal = currentOrder.getPaidTotal();
             var dueTotal = currentOrder.getTotalTaxIncluded();
             var remaining = dueTotal > paidTotal ? dueTotal - paidTotal : 0;
@@ -362,6 +419,7 @@ function ab_pos_screens(instance, module) {
             this.$('.payment-paid-total').html(this.format_currency(paidTotal));
             this.$('.payment-remaining').html(this.format_currency(remaining));
             this.$('.payment-change').html(this.format_currency(change));
+            this.$('.doc-numbers').html(currentOrder.next_document_numbers);
             if(currentOrder.selected_orderline === undefined){
                 remaining = 1;  // What is this ? 
             }

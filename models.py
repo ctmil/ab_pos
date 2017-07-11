@@ -39,6 +39,12 @@ class pos_session_refund(models.Model):
 	refund_id = fields.Many2one('account.invoice',string='Nota de Credito')
 	amount_total = fields.Float('Monto Total',related='refund_id.amount_total')
 
+class pos_order(models.Model):
+	_inherit = 'pos.order'
+
+	refund_id = fields.Many2one('pos.order','Devolución')
+	origin_id = fields.Many2one('pos.order','Pedido Origen')
+
 class pos_session(models.Model):
 	_inherit = 'pos.session'
 
@@ -68,8 +74,17 @@ class pos_session(models.Model):
 				return_id = self.env['pos.session.refund'].create(vals)
 		return None
 
+	@api.one
+	def _compute_next_document_number(self):
+		return_value = ''
+		if self.config_id and self.config_id.journal_id:
+			return_value = ' Fact A: ' + str(self.config_id.journal_id.last_a_sale_document_completed + 1).zfill(8) + ' - Fact B: ' \
+					+ str(self.config_id.journal_id.last_b_sale_document_completed + 1).zfill(8)
+		self.next_document_numbers = return_value
+
 	refund_ids = fields.One2many(comodel_name='pos.session.refund',inverse_name='session_id',string='Notas de Crédito',readonly=True)
 	session_sales = fields.Float('Ventas Diarias',compute=_compute_session_sales)
+	next_document_numbers = fields.Char('Proximas Facturas',compute=_compute_next_document_number)
 
 class product_product(models.Model):
 	_inherit = 'product.product'
@@ -96,10 +111,12 @@ class account_journal(models.Model):
 
 	@api.model
 	def connect_fiscal_printer(self):
+		# import pdb;pdb.set_trace()
 		journals = self.env['account.journal'].search([])
 		for journal in journals:
 			if journal.use_fiscal_printer and journal.nro_serie != '':
 				fps = self.env['fpoc.fiscal_printer'].search([])
+				#import pdb;pdb.set_trace()
 				for fp in fps:
 					if fp.serialNumber == journal.nro_serie:
 						vals = {
@@ -121,7 +138,7 @@ class account_journal(models.Model):
 	coeficiente = fields.Float('Coeficiente',default=0)
 	producto_recargo = fields.Many2one('product.product','Producto Recargo',domain=[('type','=','service')])
 	nro_serie = fields.Char('Nro de Serie Impresora Fiscal')
-	fiscal_printer_id = fields.Many2one('fpoc.fiscal_printer','Fiscal Printer',compute=_compute_fiscal_printer)
+	# fiscal_printer_id = fields.Many2one('fpoc.fiscal_printer','Fiscal Printer',compute=_compute_fiscal_printer)
 
 class account_bank_statement_line(models.Model):
 	_inherit = 'account.bank.statement.line'

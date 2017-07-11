@@ -10,7 +10,6 @@
 		</span>
 	</t>
     </t -->
-
     <t t-name="NumpadWidget">
         <div class="numpad">
             <button class="input-button number-char">1</button>
@@ -150,13 +149,13 @@
     </t>
 
 
-    <!-- t t-extend="PaymentScreenWidget">
+    <t t-extend="PaymentScreenWidget">
 	<t t-jquery=".payment-info" t-operation="after">
-		<div class="payment-keys">
-			<h3>Presione F3 para agregar pago</h3>
+		<div class="document-numbers">
+			<span class="doc-numbers"></span>
 		</div>
 	</t>
-    </t -->
+    </t>
 
     <t t-extend="Paymentline">
         <!-- t t-jquery=".paymentline-name" t-operation="append" -->

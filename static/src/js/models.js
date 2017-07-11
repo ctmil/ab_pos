@@ -7,12 +7,22 @@ function ab_pos_models(instance, module) {
     var PaymentlineParent = module.Paymentline;
     var PaymentlineParent = module.Paymentline;
     var PosModelParent = module.PosModel;
+    var OrderParent = module.Order;
 
     module.Order = module.Order.extend({
+
+        initialize: function(attr,options){
+            var ret_value = OrderParent.prototype.initialize.apply(this, arguments);
+	    this.next_document_numbers = this.pos.pos_session.next_document_numbers;
+	    console.log('After initialize', this);
+	    return ret_value;
+        },
+
         removePaymentline: function(line){
             if(this.selected_paymentline === line){
                 this.selectPaymentline(undefined);
             }
+	    console.log('removePaymentline',line);
 	    if (line.product_recargo && line.cashregister.journal.coeficiente > 0) {
 		// console.log('Con producto de recargo ',line.product_recargo,this,this.attributes.orderLines.models);
 		var orderLines = this.attributes.orderLines.models;
@@ -339,7 +349,7 @@ function ab_pos_models(instance, module) {
             },
         },{
             model:  'pos.session',
-            fields: ['id', 'journal_ids','name','user_id','config_id','start_at','stop_at','sequence_number','login_number'],
+            fields: ['id', 'journal_ids','name','user_id','config_id','start_at','stop_at','sequence_number','login_number','next_document_numbers'],
             domain: function(self){ return [['state','=','opened'],['user_id','=',self.session.uid]]; },
             loaded: function(self,pos_sessions){
                 self.pos_session = pos_sessions[0]; 

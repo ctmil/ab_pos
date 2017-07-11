@@ -17,6 +17,26 @@ _logger = logging.getLogger(__name__)
 class pos_order(osv.osv):
 	_inherit = 'pos.order'
 
+	def refund(self, cr, uid, ids, context=None):
+		if len(ids) > 1:
+			raise osv.except_osv(_('Error!'),'No se puede realizar más de una operación a la vez')
+		origin_id = ids[0]
+		order = self.pool.get('pos.order').browse(cr,uid,origin_id)
+		if order.refund_id:
+			raise osv.except_osv(_('Error!'),'El pedido ya  cuenta con una devolución')
+		if order.partner_id.document_number == 11111111113:
+			raise osv.except_osv(_('Error!'),'No se hacen devoluciones de consumidores finales')
+		res = super(pos_order, self).refund(cr,uid,ids,context=context)
+		if 'res_id' in res.keys():
+			vals = {
+				'refund_id': res['res_id']
+				}
+			return_id = self.pool.get('pos.order').write(cr,uid,origin_id,vals)
+			vals = {
+				'origin_id': origin_id	
+				}
+			return_id = self.pool.get('pos.order').write(cr,uid,res['res_id'],vals)
+		return res 
 
 	def add_payment(self, cr, uid, order_id, data, context=None):
 	        """Create a new payment for the order"""
@@ -98,3 +118,22 @@ class pos_order(osv.osv):
 
 
 pos_order()
+
+
+class pos_make_payment(osv.osv_memory):
+        _inherit = 'pos.make.payment'
+
+        def check(self, cr,uid, ids, context=None):
+                res = super(pos_make_payment,self).check(cr,uid,ids,context)
+		#import pdb;pdb.set_trace()
+		if 'active_id' not in context.keys():
+			raise osv.except_osv('No se encuentra pedido origen')
+		if len(ids) > 1:
+			raise osv.except_osv('No se permite devolver múltiples pedidos')
+		if 'ir.actions.act_window_close' in res.values():
+			order = self.pool.get('pos.order').browse(cr,uid,context['active_id'])
+                        self.pool.get('pos.order').create_refund_from_ui_v3(cr,uid,[order.id])
+                return {'type': 'ir.actions.act_window_close'}
+
+
+pos_make_payment()

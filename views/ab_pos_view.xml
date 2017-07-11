@@ -1,6 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
+
+        <record id="ab_action_fiscal_printer_fiscal_printer_fiscal_printers" model="ir.actions.act_window">
+            <field name="name">Fiscal Printers</field>
+            <field name="res_model">fpoc.fiscal_printer</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="fpoc.view_fiscal_printer_fiscal_printer_tree"/>
+            <field name="search_view_id" ref="fpoc.view_fiscal_printer_fiscal_printer_filter"/>
+            <field name="domain">[]</field>
+        </record>
+
+        <record id="ab_action_fiscal_printer_configuration" model="ir.actions.act_window">
+            <field name="name">Fiscal Printers Configuration</field>
+            <field name="res_model">fpoc.configuration</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="fpoc.view_fiscal_printer_configuration_tree"/>
+        </record>
+
+        <record id="ab_action_fiscal_printer_journal" model="ir.actions.act_window">
+            <field name="name">Journals</field>
+            <field name="res_model">account.journal</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+	    <field name="domain">[('use_fiscal_printer','=',True)]</field>
+        </record>
+
+        <record id="ab_action_disconnected_fiscal_printers" model="ir.actions.act_window">
+            <field name="name">Disconnected Fiscal Printers</field>
+            <field name="res_model">fpoc.disconnected</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="target"></field>
+        </record>
+
+        <menuitem id="ab_menu_fp_config" name="Fiscal Printers" parent="point_of_sale.menu_point_root" sequence="40"/>
+
+        <menuitem id="ab_menu_disconnected" name="Disconnected" parent="ab_menu_fp_config" sequence="10"
+            action="ab_action_disconnected_fiscal_printers"
+            />
+
+        <menuitem id="ab_menu_fiscal_printers" name="Fiscal Printers" parent="ab_menu_fp_config" sequence="20"
+            action="ab_action_fiscal_printer_fiscal_printer_fiscal_printers"
+            />
+
+        <menuitem id="ab_menu_fiscal_printer_configurations" name="Fiscal Configurations" parent="ab_menu_fp_config" sequence="30"
+            action="ab_action_fiscal_printer_configuration"
+            />
+
+        <menuitem id="ab_menu_fiscal_printer_journals" name="Journals" parent="ab_menu_fp_config" sequence="40"
+            action="ab_action_fiscal_printer_journal"
+            />
+
 	
         <record id="ab_pos_view_partner_form" model="ir.ui.view">
             <field name="name">ab.pos.view.partner.form</field>
@@ -59,6 +112,13 @@
 			<field name="nro_cupon" />
 			<field name="nro_tarjeta" />
 		</field>
+		<field name="partner_id" position="after">
+			<field name="refund_id" readonly="1"/>
+			<field name="origin_id" readonly="1"/>
+		</field>
+		<!-- button name="refund" position="attributes">
+			<attribute name="invisible">['|',('refund_id','!=',None),('state','=','draft')]</attribute>
+		</button -->
             </field>
         </record>
 
@@ -69,6 +129,9 @@
             <field name="arch" type="xml">
                 <button name="close" position="after">
                         <button name="update_session_refunds" type="object" string="Actualizar NCs"></button>
+		</button>
+		<button name="close" position="attributes">
+			<attribute name="string">Cierre Z</attribute>
 		</button>
 		<field name="config_id" position="after">
 			<group>
@@ -84,6 +147,7 @@
 						<field name="amount_total" />
 					</tree>
 				</field>
+				<field name="next_document_numbers" />
 			</group>
 		</field>
             </field>
