@@ -12,6 +12,18 @@ import time
 from openerp.fields import Date as newdate
 from datetime import datetime,date,timedelta
 
+class fpoc_disconnected(models.Model):
+	_inherit = 'fpoc.disconnected'
+
+	@api.model
+	def connect_fpoc_disconnected(self):
+		fpds = self.search([])
+		for fpd in fpds:
+			if fpd.name:
+				fp = self.env['fpoc.fiscal_printer'].search([('name','=',fpd.name)])
+				if not fp:
+					return_id = fpd.create_fiscal_printer()
+
 class account_invoice(models.Model):
 	_inherit = 'account.invoice'
 
@@ -44,6 +56,14 @@ class pos_order(models.Model):
 
 	refund_id = fields.Many2one('pos.order','Devolución')
 	origin_id = fields.Many2one('pos.order','Pedido Origen')
+
+class pos_order_line(models.Model):
+	_inherit = 'pos.order.line'
+
+	@api.constrains('qty')
+	def _check_qty(self):
+		if self.qty == 0:
+			raise ValidationError('No se pueden cargar cantidades en 0')
 
 class pos_session(models.Model):
 	_inherit = 'pos.session'

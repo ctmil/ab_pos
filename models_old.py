@@ -134,7 +134,8 @@ class pos_make_payment(osv.osv_memory):
 			raise osv.except_osv('No se permite devolver múltiples pedidos')
 		if 'ir.actions.act_window_close' in res.values():
 			order = self.pool.get('pos.order').browse(cr,uid,context['active_id'])
-                        self.pool.get('pos.order').create_refund_from_ui_v3(cr,uid,[order.id])
+			if order.amount_total != 0:
+	                        self.pool.get('pos.order').create_refund_from_ui_v3(cr,uid,[order.id])
                 return {'type': 'ir.actions.act_window_close'}
 
 

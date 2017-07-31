@@ -166,7 +166,22 @@ function ab_pos_models(instance, module) {
                 result.resolve([]);
                 return result;
         	}
-
+	    orders.forEach(function(order,order_index){
+		console.log('_save_to_server order',order,order_index);
+		console.log('_save_to_server order data',order['data'],order_index);
+		if (order['data'].lines) {
+			order['data'].lines.forEach(function(line,index) {
+				console.log('_save_to_server line',line[2],index);
+				if (line[2].discount > 0) {
+					orders[order_index]['data'].lines[index][2].price_unit = line[2].price_unit * ( 1 - line[2].discount / 100);
+					orders[order_index]['data'].lines[index][2].previous_discount = line[2].discount;
+					orders[order_index]['data'].lines[index][2].discount = 0;
+					// console.log('_save_to_server line discount',line.price_unit,line.discount,orders[order_index]['data'].lines[index].price_unit);
+					}
+				});
+			};
+		});
+	    console.log('_save_to_server post-forEach',orders);
             options = options || {};
 
             var self = this;
@@ -178,7 +193,7 @@ function ab_pos_models(instance, module) {
 		var new_orders = [orders[0]];
 		} else {
 		var new_orders = orders;
-		}
+		};
             console.log('esta llamando el _save_to_server. Llama al create_from_ui_v3 ',orders,timeout);
             // self.pos_widget.loading_message('Imprimiendo ticket'), 100);
 

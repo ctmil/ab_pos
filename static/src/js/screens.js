@@ -296,6 +296,16 @@ function ab_pos_screens(instance, module) {
                 return;
             }
 
+            var olines = currentOrder.get('orderLines').models;
+            for (var i = 0; i < olines.length; i++) {
+                if (olines[i].get_quantity() === 0) {
+                    this.pos_widget.screen_selector.show_popup('error',{
+                        'message': _t('Cantidad 0'),
+                        'comment': _t('No puede tener cantidades de producto en 0.'),
+                    });
+                    return;
+                }
+	    } 
             var plines = currentOrder.get('paymentLines').models;
             for (var i = 0; i < plines.length; i++) {
                 if (plines[i].get_type() === 'bank' && plines[i].get_amount() < 0) {
