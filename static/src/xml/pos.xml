@@ -45,7 +45,8 @@
             </div -->
         <t t-jquery=".price-tag" t-operation="after">
 		<span class="price-tag">
-                        <t t-esc="widget.format_currency(product.lst_price_with_vat,'Product Price')"/>
+                        <!-- t t-esc="widget.format_currency(product.lst_price_with_vat,'Product Price')"/ -->
+                        <t t-esc="product.price_inventory"/>
 		</span>
 	</t>
         <t t-jquery=".product-name" t-operation="after">
