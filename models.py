@@ -126,7 +126,8 @@ class product_product(models.Model):
 	@api.multi
 	def _compute_price_inventory(self):
 		for prod in self:
-			prod.price_inventory = str(prod.lst_price_with_vat) + '$ | ' + str(int(prod.qty_available)) + ' unid.'
+			#prod.price_inventory = str(prod.lst_price_with_vat) + '$ | ' + str(int(prod.qty_available)) + ' unid.'
+			prod.price_inventory = "%.2f"%(prod.lst_price_with_vat) + '$ | ' + str(int(prod.qty_available)) + ' unid.'
 
 	tax_rate = fields.Float('Tasa IVA',compute=_compute_tax_rate)
 	lst_price_with_vat = fields.Float('Precio c/IVA',compute=_compute_lst_price_with_vat)
