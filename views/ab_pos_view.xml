@@ -71,6 +71,9 @@
             <field name="model">product.product</field>
 	    <field name="inherit_id" ref="product.product_normal_form_view" />
             <field name="arch" type="xml">
+		<field name="standard_price" position="after">
+			<field name="check_no_negative" />
+		</field>
 		<field name="taxes_id" position="after">
 			<field name="tax_rate" />
 			<field name="lst_price_with_vat" />

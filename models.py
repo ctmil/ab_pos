@@ -131,7 +131,7 @@ class product_product(models.Model):
 	tax_rate = fields.Float('Tasa IVA',compute=_compute_tax_rate)
 	lst_price_with_vat = fields.Float('Precio c/IVA',compute=_compute_lst_price_with_vat)
 	price_inventory = fields.Char('Precio y stock formateado',compute=_compute_price_inventory)
-	#stock_control = fields.Boolean('Control de Stock',default=True)
+	check_no_negative = fields.Boolean('Control de Stock',default=False)
 
 class account_journal(models.Model):
 	_inherit = 'account.journal'
