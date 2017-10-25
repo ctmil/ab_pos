@@ -4,6 +4,38 @@ function ab_pos_screens(instance, module) {
     var round_pr = instance.web.round_precision;
     var round_di = instance.web.round_decimals;
 
+
+    module.ProductScreenWidget = module.ProductScreenWidget.extend({
+
+        start: function(){ //FIXME this should work as renderElement... but then the categories aren't properly set. explore why
+            var self = this;
+
+            this.product_list_widget = new module.ProductListWidget(this,{
+                click_product_action: function(product){
+                    if(product.to_weight && self.pos.config.iface_electronic_scale){
+                        self.pos_widget.screen_selector.set_current_screen('scale',{product: product});
+                    }else{
+			console.log('product_list_widget',product);
+			if (product.qty_available > 0 || product.check_no_negative) {
+                        	self.pos.get('selectedOrder').addProduct(product);
+				};
+                    }
+                },
+                product_list: this.pos.db.get_product_by_category(0)
+            });
+            this.product_list_widget.replace(this.$('.placeholder-ProductListWidget'));
+
+            this.product_categories_widget = new module.ProductCategoriesWidget(this,{
+                product_list_widget: this.product_list_widget,
+            });
+            this.product_categories_widget.replace(this.$('.placeholder-ProductCategoriesWidget'));
+        },
+    });
+
+
+
+
+
     module.PaymentScreenWidget = instance.point_of_sale.PaymentScreenWidget.extend({
 
         show: function(){
@@ -30,6 +62,7 @@ function ab_pos_screens(instance, module) {
                             comment: _t('Perderá todos los datos ingresados'),
                             confirm: function(){
                                this.pos.delete_current_order();
+				localStorage.removeItem('openerp_pos_db_orders');
                             },
                         });
             }else{
@@ -279,6 +312,16 @@ function ab_pos_screens(instance, module) {
 	                });
         	        return;
 		}
+
+
+	    if (!partner.document_number.match(/^\d+$/)) {
+                this.pos_widget.screen_selector.show_popup('error',{
+       	            'message': _t('Cliente mal cargado'),
+              	    'comment': _t('El nro de doc tiene caracteres no numericos'),
+	                });
+       	        return;
+
+		}
 	
 	    if (currentOrder.getTotalTaxIncluded() > 1000 && partner.document_number == '11111111113') {
 	                this.pos_widget.screen_selector.show_popup('error',{
@@ -298,6 +341,7 @@ function ab_pos_screens(instance, module) {
 
             var olines = currentOrder.get('orderLines').models;
             for (var i = 0; i < olines.length; i++) {
+		console.log('validate_order',olines[i].get_quantity());
                 if (olines[i].get_quantity() === 0) {
                     this.pos_widget.screen_selector.show_popup('error',{
                         'message': _t('Cantidad 0'),

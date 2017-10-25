@@ -44,6 +44,45 @@ function ab_pos_models(instance, module) {
         get_price_with_vat: function(){
             return this.product.lst_price_with_vat;
         },
+        // sets the quantity of the product. The quantity will be rounded according to the 
+        // product's unity of measure properties. Quantities greater than zero will not get 
+        // rounded to zero
+        set_quantity: function(quantity){
+	    console.log('Pasa por set_quantity_v1', quantity,this.product.qty_available);
+	    if (this.product.qty_available - quantity < 0) {
+		if (!this.product.check_no_negative) {
+			console.log('Se queda sin stock',self);
+			quantity = 'remove';
+                	this.order.removeOrderline(this);
+            		// this.trigger('change',this);
+                    	//self.pos_widget.screen_selector.show_popup('stock',{
+	                //        message: 'Sin stock para la venta',
+        	        //        comment: 'Sin stock para la venta'
+                	//    });
+			};
+ 		};
+            if(quantity === 'remove'){
+                this.order.removeOrderline(this);
+                return;
+            }else{
+                var quant = parseFloat(quantity) || 0;
+                var unit = this.get_unit();
+                if(unit){
+                    if (unit.rounding) {
+                        this.quantity    = round_pr(quant, unit.rounding);
+                        var decimals = Math.ceil(Math.log(1.0 / unit.rounding) / Math.log(10));
+                        this.quantityStr = openerp.instances[this.pos.session.name].web.format_value(this.quantity, { type: 'float', digits: [69, decimals]});
+                    } else {
+                        this.quantity    = round_pr(quant, 1);
+                        this.quantityStr = this.quantity.toFixed(0);
+                    }
+                }else{
+                    this.quantity    = quant;
+                    this.quantityStr = '' + this.quantity;
+                }
+            }
+            this.trigger('change',this);
+        },
 //
    });
 
@@ -194,7 +233,7 @@ function ab_pos_models(instance, module) {
 		} else {
 		var new_orders = orders;
 		};
-            console.log('esta llamando el _save_to_server. Llama al create_from_ui_v3 ',orders,timeout);
+            console.log('esta llamando el _save_to_server. Llama al create_from_ui_v3 ',orders,self.pos_widget);
             // self.pos_widget.loading_message('Imprimiendo ticket'), 100);
 
             return_value = posOrderModel.call('create_from_ui_v3',
@@ -229,7 +268,7 @@ function ab_pos_models(instance, module) {
                 event.preventDefault();
                 console.error('Failed to send orders:', new_orders);
             });
-	    return;
+	    return return_value;
         },
 
         // saves the order locally and try to send it to the backend. 
@@ -441,7 +480,7 @@ function ab_pos_models(instance, module) {
             model:  'product.product',
             fields: ['display_name', 'list_price','price','pos_categ_id', 'taxes_id', 'ean13', 'default_code', 
                      'to_weight', 'uom_id', 'uos_id', 'uos_coeff', 'mes_type', 'description_sale', 'description',
-                     'product_tmpl_id','tax_rate','lst_price_with_vat'],
+                     'product_tmpl_id','tax_rate','lst_price_with_vat','qty_available','check_no_negative','price_inventory'],
             domain: [['sale_ok','=',true],['available_in_pos','=',true]],
             context: function(self){ return { pricelist: self.pricelist.id, display_default_code: false }; },
             loaded: function(self, products){
